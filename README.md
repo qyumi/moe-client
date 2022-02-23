@@ -3,7 +3,7 @@
 ### Project structure
 
 - **client/** - Contains the bots core client
-- **events/** - Events that will be catched and processed in here
+- **events/** - Event processor
 - **interfaces/** - Interfaces or types that are required for the events
 - **models/** - Database models
 - **index.ts** - Starting point
@@ -12,13 +12,13 @@
 
 - Node.js 14.16 or higher **required**
 - MongoDB **required**
-- S3 server like AWS or MinIO **required**
+- S3 server like AWS S3, MinIO or Wasabi **required**
 - Yarn (optional)
 - PM2 (optional)
 
 ### Running the client
 
-To run the start, you first need to create a .env file located in the clients working directory.
+To run the client, first create a .env file located in the clients working directory.
 
 1. Create a .env file. An example is located in the root of the repository.
 
@@ -29,4 +29,4 @@ To run the start, you first need to create a .env file located in the clients wo
    `yarn build` or `npm build`
 
 4. Run
-   `node lib/index.js`
+   `node lib/index.js` or `pm2 start lib/index.js --watch`
