@@ -7,55 +7,48 @@ import { RunEvent } from '../../interfaces/Event';
 import Attachments from '../../models/Attachment'; 
 import Messages from '../../models/Message';
 
-export const run: RunEvent = async (client: MoeClient, _: Message, new_message: Message) => {
-  client.logger.info(`Message updated: ${new_message.id}`);
-  let old_message = null;
+export const run: RunEvent = async (client: MoeClient, _: Message, newmsg: Message) => {
+  client.logger.info(`Message updated: ${newmsg.id}`);
+  let oldmsg = null;
   let file = null;
   let has_attachment = false;
 
-  old_message = await Messages.findById(new_message.id).exec();
-  file = await Attachments.findById(new_message.id).exec();
+  oldmsg = await Messages.findById(newmsg.id).exec();
+  file = await Attachments.findById(newmsg.id).exec();
 
-  if (old_message == null || new_message == null) return;
-  if (old_message.content == new_message.content) return;
+  if (oldmsg == null || newmsg == null || oldmsg.content == newmsg.content) return;
   if (file != null || file != undefined) has_attachment = true;
 
   const channel_id = process.env.MESSAGE_LOG!;
   const channel: TextChannel | Channel = await client.channels.fetch(channel_id.toString());
-  const user_id = old_message.user_id.toString();
+  const user_id = oldmsg.user_id.toString();
   const user = await client.users.fetch(user_id);
 
   try {
-    await Messages.updateOne({ _id: new_message.id }, { content: new_message.content, raw_message: new_message.toJSON(), updated: true });
+    await Messages.updateOne({ _id: newmsg.id }, { content: newmsg.content, raw_message: newmsg.toJSON(), updated: true });
   } catch (err) {
     client.logger.error(err)
   }
 
   const Embed = new MessageEmbed()
     .setAuthor(user.tag, user.displayAvatarURL())
-    .setDescription(`**[Message](${new_message.url}) sent by <@${user.id}> updated in <#${new_message.channel.id}>**`)
-    .addField('Old message', old_message.content)
-    .addField('New message', new_message.content)
-    .setFooter(`Message ID: ${old_message._id} | User ID: ${old_message.user_id}`)
+    .setDescription(`**[Message](${newmsg.url}) sent by <@${user.id}> updated in <#${newmsg.channel.id}>**`)
+    .addField('Old message', oldmsg.content)
+    .addField('New message', newmsg.content)
+    .setFooter(`Message ID: ${oldmsg._id} | User ID: ${oldmsg.user_id}`)
     .setColor(0xecf71e)
     .setTimestamp();
 
   if (has_attachment) {
     let params = {
       Bucket: process.env.S3_BUCKET!,
-      Key: `${new_message.guild?.id}/${new_message.id}`
+      Key: `${newmsg.guild?.id}/${newmsg.id}`
     }
 
     if (file?.filetype != undefined) {
-      params.Key = `${new_message.guild?.id}/${new_message.id}.${file.filetype}`
+      params.Key = `${newmsg.guild?.id}/${newmsg.id}.${file.filetype}`
     }
 
-    /*
-    * Get object data.
-    * It is possible for the client to insert data about an attachment into the database but
-    * not getting the binary data in time to upload it to the S3 bucket.
-    * Never happened in practice but could happen in theory.
-    */
     let attachment_data = client.s3client.getObject(params)
       .on('error', async err => {
         if (err.statusCode == 404) {

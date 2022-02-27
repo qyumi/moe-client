@@ -44,12 +44,6 @@ export const run: RunEvent = async (client: MoeClient, message: Message) => {
       params.Key = `${deleted_message.guild_id}/${message.id}.${file.filetype}`
     }
   
-    /*
-    * Get object data.
-    * It is possible for the client to insert data about an attachment into the database but
-    * not getting the binary data in time to upload it to the S3 bucket.
-    * Never happened in practice but could happen in theory.
-    */
     let attachment_data = client.s3client.getObject(params)
       .on('error', async err => {
         if (err.statusCode == 404) {

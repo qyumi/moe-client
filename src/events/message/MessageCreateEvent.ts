@@ -4,7 +4,6 @@ import { Message, MessageAttachment } from 'discord.js';
 import { MoeClient } from '../../clients/MoeClient';
 import { RunEvent } from '../../interfaces/Event';
 import Messages from '../../models/Message';
-import Attachments from '../../models/Attachment';
 
 export const run: RunEvent = async (client: MoeClient, message: Message) => {
   if (message.author.bot || message.channel.type == 'dm') return;
@@ -39,47 +38,6 @@ export const run: RunEvent = async (client: MoeClient, message: Message) => {
     });
   } catch (err) {
     client.logger.error(err);
-  }
-
-  // TODO: Move this command to a different file
-  if (message.member?.hasPermission('MANAGE_MESSAGES')) {
-    if (message.content.startsWith('moe log full')) {
-      const args = message.content.split(' ');
-      const message_id = args[3];
-      const data = await Messages.findById(message_id).exec();
-
-      if (data == null) {
-        return await message.channel.send(`No entry found for ${message_id}`);
-      } else {
-        client.logger.info(`${message.author.id} requested data for ${message_id}`);
-
-        let log_entry = new MessageAttachment(Buffer.from(JSON.stringify(data.toJSON(), null, 4)), `ENTRY_${message_id}.json`);
-
-        if (data.attachment) {
-          let file_data = await Attachments.findById(message_id).exec();
-          let url: string = `https://${process.env.S3_BUCKET}.${process.env.S3_ENDPOINT}/${message.guild!.id}/${message_id}.${file_data!.filetype}`;
-          
-          if (file_data!.filetype == null) {
-            url = `https://${process.env.S3_BUCKET}.${process.env.S3_ENDPOINT}/${message.guild!.id}/${message_id}`;
-          }
-
-          client.logger.info(url);
-
-          return (
-            await message.author.createDM()
-          ).send(`Log requested for ${message_id}:`, {
-            files: [log_entry, 
-            {
-              name: file_data?.filename,
-              attachment: url,
-            }
-            ],
-          });
-        }
-
-        await (await message.author.createDM()).send(`Log requested for ${message_id}:`, log_entry);
-      }
-    }
   }
 };
 

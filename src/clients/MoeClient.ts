@@ -32,7 +32,7 @@ class MoeClient extends Client {
     await this.login(token);
     this.logger.info("Connecting to MongoDB..");
     await mongoose.connect(process.env.DATABASE_URL!, { useNewUrlParser: true, useUnifiedTopology: true });
-    this.logger.info("CONNECTED");
+    this.logger.success("CONNECTED");
 
     
     // Register basic events from src/events/..
