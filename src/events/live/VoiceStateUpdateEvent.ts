@@ -13,17 +13,15 @@ export const run: RunEvent = async (client: MoeClient, oldvs: VoiceState, newvs:
 
   if (newvs.channel?.id != undefined) {
 
-    for (let presence of newvs.member!.user.presence.activities) {
-      if (presence.type == 'STREAMING' && newvs.streaming) {
-        Embed.addField('Streaming', presence.name)
-        break;
-      }
-    }
-
     Embed.setDescription(`**<@${user.id}> joined voice channel <#${newvs.channel?.id}>**`)
       .setFooter(`User ID: ${user.id} | Voice Channel ID: ${newvs.channel?.id}`)
       .addField('Muted', newvs.mute)
-      .addField('Deaf', newvs.deaf)
+      .addField('Deaf', newvs.deaf);
+
+    if (newvs.member?.presence.activities[0] != undefined && newvs.streaming) {
+      Embed.addField('Streaming', newvs.member.presence.activities[0].name);
+    }
+    
   } else {
     Embed.setDescription(`**<@${user.id}> left voice channel <#${oldvs.channel?.id}>**`)
       .setFooter(`User ID: ${user.id} | Voice Channel ID: ${oldvs.channel?.id}`);
