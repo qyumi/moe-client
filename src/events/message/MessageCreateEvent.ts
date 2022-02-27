@@ -57,13 +57,8 @@ export const run: RunEvent = async (client: MoeClient, message: Message) => {
 
         if (data.attachment) {
           let file_data = await Attachments.findById(message_id).exec();
-          let file_name = `${file_data?.filename}`;
-
-          if (file_data?.filetype == undefined) {
-            file_name = file_data!.filename;
-          }
-
           let url: string = `https://${process.env.S3_BUCKET}.${process.env.S3_ENDPOINT}/${message.guild!.id}/${message_id}.${file_data!.filetype}`;
+          
           if (file_data!.filetype == null) {
             url = `https://${process.env.S3_BUCKET}.${process.env.S3_ENDPOINT}/${message.guild!.id}/${message_id}`;
           }

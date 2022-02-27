@@ -16,7 +16,7 @@ export const run: RunEvent = async (client: MoeClient, _: Message, new_message: 
   old_message = await Messages.findById(new_message.id).exec();
   file = await Attachments.findById(new_message.id).exec();
 
-  if (old_message == null) return;
+  if (old_message == null || new_message == null) return;
   if (old_message.content == new_message.content) return;
   if (file != null || file != undefined) has_attachment = true;
 

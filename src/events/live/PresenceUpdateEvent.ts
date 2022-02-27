@@ -11,6 +11,9 @@ export const run: RunEvent = async (
 ) => {
   const message_logchannel_id = process.env.EVENT_LOG!
   const new_user = newPresence.member!.user;
+  const raw_new_data = new MessageAttachment(Buffer.from(JSON.stringify(newPresence, null, 4)), 'new.json');
+  const raw_old_data = new MessageAttachment(Buffer.from(JSON.stringify(oldPresence, null, 4)), 'old.json');
+  const logchannel: TextChannel | Channel = await client.channels.fetch(message_logchannel_id);
 
   const Embed = new MessageEmbed()
     .setAuthor(new_user.tag, new_user.displayAvatarURL())
@@ -20,9 +23,6 @@ export const run: RunEvent = async (
     .setColor(0x03fcb1)
     .setTimestamp();
 
-  let raw_new_data = new MessageAttachment(Buffer.from(JSON.stringify(newPresence, null, 4)), 'new.json');
-  let raw_old_data = new MessageAttachment(Buffer.from(JSON.stringify(oldPresence, null, 4)), 'old.json');
-  let logchannel: TextChannel | Channel = await client.channels.fetch(message_logchannel_id);
   await (logchannel as TextChannel).send('', { embed: Embed, files: [raw_old_data, raw_new_data] });
 };
 
